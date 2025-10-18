@@ -76,6 +76,11 @@ const App: React.FC = () => {
 
   // Effect for height monitoring
   useEffect(() => {
+    if (!window.electronAPI) {
+      console.warn("Electron API not available - running in browser mode")
+      return
+    }
+
     const cleanup = window.electronAPI.onResetView(() => {
       console.log("Received 'reset-view' message from main process.")
       queryClient.invalidateQueries(["screenshots"])
@@ -129,6 +134,11 @@ const App: React.FC = () => {
   }, [view]) // Re-run when view changes
 
   useEffect(() => {
+    if (!window.electronAPI) {
+      console.warn("Electron API not available - running in browser mode")
+      return
+    }
+
     const cleanupFunctions = [
       window.electronAPI.onSolutionStart(() => {
         setView("solutions")
@@ -161,7 +171,7 @@ const App: React.FC = () => {
       })
     ]
     return () => cleanupFunctions.forEach((cleanup) => cleanup())
-  }, [])
+  }, [view])
 
   return (
     <div ref={containerRef} className="min-h-0">

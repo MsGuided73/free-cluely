@@ -41,6 +41,11 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
   const { data: screenshots = [], refetch } = useQuery<Array<{ path: string; preview: string }>, Error>(
     ["screenshots"],
     async () => {
+      if (!window.electronAPI) {
+        console.warn("Electron API not available - returning empty screenshots")
+        return []
+      }
+
       try {
         const existing = await window.electronAPI.getScreenshots()
         return existing
@@ -54,7 +59,8 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
       staleTime: Infinity,
       cacheTime: Infinity,
       refetchOnWindowFocus: true,
-      refetchOnMount: true
+      refetchOnMount: true,
+      enabled: !!window.electronAPI // Only run query if electronAPI is available
     }
   )
 
@@ -68,6 +74,11 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
   }
 
   const handleDeleteScreenshot = async (index: number) => {
+    if (!window.electronAPI) {
+      console.warn("Electron API not available - cannot delete screenshots in browser mode")
+      return
+    }
+
     const screenshotToDelete = screenshots[index]
 
     try {
@@ -87,7 +98,11 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
   }
 
   const handleChatSend = async () => {
-    if (!chatInput.trim()) return
+    if (!chatInput.trim() || !window.electronAPI) {
+      console.warn("Electron API not available - cannot send chat messages in browser mode")
+      return
+    }
+
     setChatMessages((msgs) => [...msgs, { role: "user", text: chatInput }])
     setChatLoading(true)
     setChatInput("")
@@ -104,6 +119,12 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
 
   // Load current model configuration on mount
   useEffect(() => {
+    if (!window.electronAPI) {
+      console.warn("Electron API not available - using default model config")
+      setCurrentModel({ provider: "gemini", model: "gemini-2.0-flash" })
+      return
+    }
+
     const loadCurrentModel = async () => {
       try {
         const config = await window.electronAPI.getCurrentLlmConfig();
@@ -116,6 +137,11 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
   }, []);
 
   useEffect(() => {
+    if (!window.electronAPI) {
+      console.warn("Electron API not available - running in browser mode")
+      return
+    }
+
     const updateDimensions = () => {
       if (contentRef.current) {
         let contentHeight = contentRef.current.scrollHeight
@@ -161,10 +187,15 @@ const Queue: React.FC<QueueProps> = ({ setView }) => {
       resizeObserver.disconnect()
       cleanupFunctions.forEach((cleanup) => cleanup())
     }
-  }, [isTooltipVisible, tooltipHeight])
+  }, [isTooltipVisible, tooltipHeight, refetch, setView, showToast])
 
   // Seamless screenshot-to-LLM flow
   useEffect(() => {
+    if (!window.electronAPI) {
+      console.warn("Electron API not available - screenshot processing disabled in browser mode")
+      return
+    }
+
     // Listen for screenshot taken event
     const unsubscribe = window.electronAPI.onScreenshotTaken(async (data) => {
       // Refetch screenshots to update the queue
