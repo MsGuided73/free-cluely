@@ -4,6 +4,9 @@ import { WindowHelper } from "./WindowHelper"
 import { ScreenshotHelper } from "./ScreenshotHelper"
 import { ShortcutsHelper } from "./shortcuts"
 import { ProcessingHelper } from "./ProcessingHelper"
+import { CodingAssistant } from "./CodingAssistant"
+import { ProjectDetector } from "./ProjectDetector"
+import { SessionManager } from "./SessionManager"
 
 export class AppState {
   private static instance: AppState | null = null
@@ -13,6 +16,11 @@ export class AppState {
   public shortcutsHelper: ShortcutsHelper
   public processingHelper: ProcessingHelper
   private tray: Tray | null = null
+
+  // Coding Assistant components
+  private codingAssistant: CodingAssistant | null = null
+  private projectDetector: ProjectDetector | null = null
+  private sessionManager: SessionManager | null = null
 
   // View management
   private view: "queue" | "solutions" = "queue"
@@ -57,6 +65,11 @@ export class AppState {
 
     // Initialize ShortcutsHelper
     this.shortcutsHelper = new ShortcutsHelper(this)
+
+    // Initialize Coding Assistant components
+    this.codingAssistant = new CodingAssistant()
+    this.projectDetector = new ProjectDetector()
+    this.sessionManager = new SessionManager()
   }
 
   public static getInstance(): AppState {
@@ -264,6 +277,19 @@ export class AppState {
 
   public getHasDebugged(): boolean {
     return this.hasDebugged
+  }
+
+  // Coding Assistant getters
+  public getCodingAssistant(): CodingAssistant | null {
+    return this.codingAssistant
+  }
+
+  public getProjectDetector(): ProjectDetector | null {
+    return this.projectDetector
+  }
+
+  public getSessionManager(): SessionManager | null {
+    return this.sessionManager
   }
 }
 

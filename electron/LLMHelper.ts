@@ -76,7 +76,8 @@ export class LLMHelper {
       return data.response
     } catch (error) {
       console.error("[LLMHelper] Error calling Ollama:", error)
-      throw new Error(`Failed to connect to Ollama: ${error.message}. Make sure Ollama is running on ${this.ollamaUrl}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to connect to Ollama: ${errorMessage}. Make sure Ollama is running on ${this.ollamaUrl}`)
     }
   }
 
@@ -107,7 +108,8 @@ export class LLMHelper {
       const testResult = await this.callOllama("Hello")
       console.log(`[LLMHelper] Successfully initialized with model: ${this.ollamaModel}`)
     } catch (error) {
-      console.error(`[LLMHelper] Failed to initialize Ollama model: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error(`[LLMHelper] Failed to initialize Ollama model: ${errorMessage}`)
       // Try to use first available model as fallback
       try {
         const models = await this.getOllamaModels()
@@ -116,7 +118,8 @@ export class LLMHelper {
           console.log(`[LLMHelper] Fallback to: ${this.ollamaModel}`)
         }
       } catch (fallbackError) {
-        console.error(`[LLMHelper] Fallback also failed: ${fallbackError.message}`)
+        const fallbackErrorMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+        console.error(`[LLMHelper] Fallback also failed: ${fallbackErrorMessage}`)
       }
     }
   }
@@ -132,6 +135,7 @@ export class LLMHelper {
   "reasoning": "Explanation of why these suggestions are appropriate."
 }\nImportant: Return ONLY the JSON object, without any markdown formatting or code blocks.`
 
+      if (!this.model) throw new Error("Gemini model not initialized")
       const result = await this.model.generateContent([prompt, ...imageParts])
       const response = await result.response
       const text = this.cleanJsonResponse(response.text())
@@ -155,6 +159,7 @@ export class LLMHelper {
 
     console.log("[LLMHelper] Calling Gemini LLM for solution...");
     try {
+      if (!this.model) throw new Error("Gemini model not initialized")
       const result = await this.model.generateContent(prompt)
       console.log("[LLMHelper] Gemini LLM returned result.");
       const response = await result.response
@@ -182,6 +187,7 @@ export class LLMHelper {
   }
 }\nImportant: Return ONLY the JSON object, without any markdown formatting or code blocks.`
 
+      if (!this.model) throw new Error("Gemini model not initialized")
       const result = await this.model.generateContent([prompt, ...imageParts])
       const response = await result.response
       const text = this.cleanJsonResponse(response.text())
@@ -204,6 +210,7 @@ export class LLMHelper {
         }
       };
       const prompt = `${this.systemPrompt}\n\nDescribe this audio clip in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the audio. Do not return a structured JSON object, just answer naturally as you would to a user.`;
+      if (!this.model) throw new Error("Gemini model not initialized")
       const result = await this.model.generateContent([prompt, audioPart]);
       const response = await result.response;
       const text = response.text();
@@ -223,6 +230,7 @@ export class LLMHelper {
         }
       };
       const prompt = `${this.systemPrompt}\n\nDescribe this audio clip in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the audio. Do not return a structured JSON object, just answer naturally as you would to a user and be concise.`;
+      if (!this.model) throw new Error("Gemini model not initialized")
       const result = await this.model.generateContent([prompt, audioPart]);
       const response = await result.response;
       const text = response.text();
@@ -243,6 +251,7 @@ export class LLMHelper {
         }
       };
       const prompt = `${this.systemPrompt}\n\nDescribe the content of this image in a short, concise answer. In addition to your main answer, suggest several possible actions or responses the user could take next based on the image. Do not return a structured JSON object, just answer naturally as you would to a user. Be concise and brief.`;
+      if (!this.model) throw new Error("Gemini model not initialized")
       const result = await this.model.generateContent([prompt, imagePart]);
       const response = await result.response;
       const text = response.text();
@@ -354,7 +363,8 @@ export class LLMHelper {
         }
       }
     } catch (error) {
-      return { success: false, error: error.message };
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      return { success: false, error: errorMessage };
     }
   }
-} 
+}
