@@ -196,4 +196,205 @@ export function initializeIpcHandlers(appState: AppState): void {
       return { success: false, error: error.message };
     }
   });
+
+  // Document Generation Handlers
+  ipcMain.handle("generate-document", async (_, request: any) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const document = await codingAssistant.generateDocument(request);
+      return document;
+    } catch (error: any) {
+      console.error("Error generating document:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("get-document-types", async () => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const types = codingAssistant.getAvailableDocumentTypes();
+      return types;
+    } catch (error: any) {
+      console.error("Error getting document types:", error);
+      return [];
+    }
+  });
+
+  ipcMain.handle("export-document", async (_, document: any, format: 'markdown' | 'json' | 'html', outputPath?: string) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const exportedContent = await codingAssistant.exportDocument(document, format, outputPath);
+      return { success: true, content: exportedContent };
+    } catch (error: any) {
+      console.error("Error exporting document:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Quick document generation handlers
+  ipcMain.handle("generate-prd", async (_, requirements: string[], additionalContext?: string) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const document = await codingAssistant.generatePRD(requirements, additionalContext);
+      return document;
+    } catch (error: any) {
+      console.error("Error generating PRD:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("generate-technical-spec", async (_, requirements: string[]) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const document = await codingAssistant.generateTechnicalSpec(requirements);
+      return document;
+    } catch (error: any) {
+      console.error("Error generating technical spec:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("generate-user-stories", async (_, requirements: string[], targetAudience?: string) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const document = await codingAssistant.generateUserStories(requirements, targetAudience);
+      return document;
+    } catch (error: any) {
+      console.error("Error generating user stories:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("generate-api-documentation", async () => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const document = await codingAssistant.generateAPIDocumentation();
+      return document;
+    } catch (error: any) {
+      console.error("Error generating API documentation:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("generate-architecture-decision", async (_, requirements: string[]) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const document = await codingAssistant.generateArchitectureDecision(requirements);
+      return document;
+    } catch (error: any) {
+      console.error("Error generating architecture decision:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Project Analysis Handlers
+  ipcMain.handle("analyze-project", async (_, projectPath: string) => {
+    try {
+      const projectDetector = appState.getProjectDetector();
+      if (!projectDetector) {
+        throw new Error("Project detector not initialized");
+      }
+
+      const context = await projectDetector.detectProject(projectPath);
+      return context;
+    } catch (error: any) {
+      console.error("Error analyzing project:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("get-project-health", async (_, projectPath: string) => {
+    try {
+      const projectDetector = appState.getProjectDetector();
+      if (!projectDetector) {
+        throw new Error("Project detector not initialized");
+      }
+
+      const health = await projectDetector.analyzeProjectHealth(projectPath);
+      return health;
+    } catch (error: any) {
+      console.error("Error getting project health:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Session Management Handlers
+  ipcMain.handle("create-session", async (_, projectPath: string) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const session = await codingAssistant.initializeSession(projectPath);
+      return session;
+    } catch (error: any) {
+      console.error("Error creating session:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("get-session-progress", async (_, sessionId: string) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      const progress = codingAssistant.getProgressReport();
+      return progress;
+    } catch (error: any) {
+      console.error("Error getting session progress:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("update-session-stage", async (_, sessionId: string, stage: string) => {
+    try {
+      const codingAssistant = appState.getCodingAssistant();
+      if (!codingAssistant) {
+        throw new Error("Coding assistant not initialized");
+      }
+
+      // Convert string to enum
+      const stageEnum = stage as any; // DevelopmentStage
+      await codingAssistant.updateStage(stageEnum);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating session stage:", error);
+      return { success: false, error: error.message };
+    }
+  });
 }
