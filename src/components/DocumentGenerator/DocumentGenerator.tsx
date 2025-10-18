@@ -24,28 +24,91 @@ const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({ isVisible, onClos
   const [requirements, setRequirements] = useState<string[]>([''])
   const [additionalContext, setAdditionalContext] = useState<string>('')
   const [targetAudience, setTargetAudience] = useState<string>('')
-  const [projectContext, setProjectContext] = useState<ProjectContext | null>(null)
+  const [projectContext, setProjectContext] = useState<ProjectContext | null>({
+    name: 'Demo React Project',
+    type: 'react',
+    primaryLanguage: 'typescript',
+    confidence: 0.9
+  })
 
   // Get available document types
   const { data: documentTypes = [] } = useQuery<DocumentType[]>(
     'document-types',
     async () => {
-      if (!window.electronAPI) return []
+      if (!window.electronAPI) {
+        // Demo mode: return mock document types
+        return [
+          { type: 'prd', name: 'Product Requirements Document', description: 'Comprehensive product requirements and specifications' },
+          { type: 'technical-spec', name: 'Technical Specification', description: 'Detailed technical architecture and design' },
+          { type: 'user-story', name: 'User Stories', description: 'Feature requirements with acceptance criteria' },
+          { type: 'api-doc', name: 'API Documentation', description: 'Complete API reference and examples' },
+          { type: 'architecture', name: 'Architecture Decision Record', description: 'Document important architectural decisions' }
+        ]
+      }
       return await window.electronAPI.invoke('get-document-types')
     },
-    { enabled: !!window.electronAPI }
+    { enabled: true } // Always enabled for demo mode
   )
 
   // Generate document mutation
   const generateMutation = useMutation(
     async (request: any) => {
-      if (!window.electronAPI) throw new Error('Electron API not available')
+      if (!window.electronAPI) {
+        // Demo mode: return mock document
+        return {
+          id: `demo_${Date.now()}`,
+          type: request.type,
+          title: `${request.type.toUpperCase()} - Demo Project`,
+          content: `# ${request.type.toUpperCase()} - Demo Project
+
+## Overview
+This is a demonstration of the AI-generated ${request.type} document.
+
+## Requirements
+${request.requirements.map((req: string, i: number) => `${i + 1}. ${req}`).join('\n')}
+
+## Generated Content
+This document was generated as a demonstration of the coding assistant's document generation capabilities.
+
+### Key Features
+- AI-powered content generation
+- Project-aware templates
+- Multiple export formats
+- Professional document structure
+
+### Technical Details
+- Generated using ${request.type} template
+- Processing time: <100ms (demo mode)
+- AI Provider: Demo Mode
+
+## Next Steps
+1. Review the generated content
+2. Customize requirements as needed
+3. Export in desired format
+4. Integrate with development workflow`,
+          metadata: {
+            generatedAt: new Date(),
+            projectContext: {
+              name: 'Demo Project',
+              type: 'react',
+              primaryLanguage: 'typescript',
+              confidence: 0.9
+            },
+            aiProvider: 'demo-mode',
+            tokensUsed: 150,
+            generationTime: 50
+          },
+          sections: [
+            { title: 'Overview', content: 'Demo overview', order: 1 },
+            { title: 'Requirements', content: 'Demo requirements', order: 2 }
+          ]
+        }
+      }
       return await window.electronAPI.invoke('generate-document', request)
     },
     {
       onSuccess: (document) => {
         console.log('Document generated successfully:', document)
-        // Could add download or preview functionality here
       },
       onError: (error) => {
         console.error('Document generation failed:', error)
