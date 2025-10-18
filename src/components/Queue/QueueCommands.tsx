@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { IoLogOutOutline } from "react-icons/io5"
 import { Dialog, DialogContent, DialogClose } from "../ui/dialog"
+import DocumentGenerator from "../DocumentGenerator/DocumentGenerator"
 
 interface QueueCommandsProps {
   onTooltipVisibilityChange: (visible: boolean, height: number) => void
@@ -20,8 +21,8 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const [audioResult, setAudioResult] = useState<string | null>(null)
+  const [isDocumentGeneratorOpen, setIsDocumentGeneratorOpen] = useState(false)
   const chunks = useRef<Blob[]>([])
-  // Remove all chat-related state, handlers, and the Dialog overlay from this file.
 
   useEffect(() => {
     let tooltipHeight = 0
@@ -148,8 +149,16 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
           </button>
         </div>
 
-        {/* Add this button in the main button row, before the separator and sign out */}
-        {/* Remove the Chat button */}
+        {/* Document Generator Button */}
+        <div className="flex items-center gap-2">
+          <button
+            className="bg-white/10 hover:bg-white/20 transition-colors rounded-md px-2 py-1 text-[11px] leading-none text-white/70 flex items-center gap-1"
+            onClick={() => setIsDocumentGeneratorOpen(true)}
+            type="button"
+          >
+            📄 Docs
+          </button>
+        </div>
 
         {/* Question mark with tooltip */}
         <div
@@ -250,8 +259,12 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
           <span className="font-semibold">Audio Result:</span> {audioResult}
         </div>
       )}
-      {/* Chat Dialog Overlay */}
-      {/* Remove the Dialog component */}
+
+      {/* Document Generator Modal */}
+      <DocumentGenerator
+        isVisible={isDocumentGeneratorOpen}
+        onClose={() => setIsDocumentGeneratorOpen(false)}
+      />
     </div>
   )
 }
